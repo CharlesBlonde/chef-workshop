@@ -1,0 +1,21 @@
+defaults
+    mode http
+    retries 3
+    option redispatch
+    maxconn 1000
+    timeout client 5000
+    timeout connect 1000
+    timeout server 5000
+
+
+listen cluster <%= @publicip %>:80
+    balance roundrobin
+<% @tomcatservers.each do |tomcatserver| -%>
+server <%= tomcatserver[:hostname] %> <%= tomcatserver[:cloud][:local_ipv4] %>:8080 check inter 200 rise 2 fall 2
+<% end -%>
+    option httpchk /cocktail/
+
+listen stats <%= @publicip %>:6970
+    stats enable
+    stats uri /
+
